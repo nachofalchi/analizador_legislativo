@@ -1,5 +1,6 @@
 import pandas as pd
-from paths import RAW_DATA_DIR, PROCESSED_DATA_DIR
+import numpy as np
+from paths import RAW_DATA_DIR, PROCESSED_DATA_DIR, DATA_DIR
 
 def get_blocks_data(res_votation):
     """
@@ -32,15 +33,69 @@ def get_blocks_data(res_votation):
     return counts_df
 
 def analyze_votation(filename):
-    """
-    Analyzes the votation data and returns a DataFrame with the results.
 	"""
-    res_votation = pd.read_csv(RAW_DATA_DIR /f'{filename}.csv')
-    res_votation.to_csv(PROCESSED_DATA_DIR/f'{filename}_processed.csv')
-    processed_votation = get_blocks_data(res_votation)
-    print('Processed votation data:')
-    return processed_votation
+	Analyzes the votation data and returns a DataFrame with the results.
+	deputies_df: DataFrame with individual deputy voting behavior and loyalty.
+	"""
+	if check_if_processed(filename):
+		print(f'File {filename} has already been processed.')
+		return None, None
+	
+	print(f'Processing votation data for {filename}...')
+
+	votation_df = pd.read_csv(RAW_DATA_DIR /filename)
 
 
+	blocks_df = get_blocks_data(votation_df)
+	deputies_df = analyze_deputies(votation_df, blocks_df, filename)
+	deputies_df.to_csv(PROCESSED_DATA_DIR / f'deputies.csv')
+	print(f'Processed votation data')
+
+def analyze_deputies(votation_df, blocks_df,vote_id):
+	"""
+	Analyzes votation data by merging block preferences with individual votes
+	and returns a DataFrame with all columns 
+	"""
+	block_preferences = blocks_df[['preference']]
+
+	merged_df = pd.merge(
+		votation_df,
+		block_preferences,
+		left_on='BLOQUE',
+		right_index=True,
+		how='left'
+	)
+
+	cond_loyal_afirmative = (merged_df['preference'] == 1) & (merged_df['¿CÓMO VOTÓ?'] == 'AFIRMATIVO')
+	cond_loyal_negative = (merged_df['preference'] == 0) & (merged_df['¿CÓMO VOTÓ?'] == 'NEGATIVO')
+
+	merged_df['loyalty'] = np.where(cond_loyal_afirmative | cond_loyal_negative, 1, 0)
+
+	rename_map = {
+		'BLOQUE': 'block',
+		'DIPUTADO': 'deputy',
+		'¿CÓMO VOTÓ?': 'vote'
+	}
+
+	merged_df.rename(columns=rename_map, inplace=True)
+      
+	merged_df['vote_id'] = vote_id
+
+	deputies_df = merged_df[['block', 'deputy', 'vote', 'loyalty']]
+	deputies_df.set_index(['block', 'deputy'], inplace=True)
 
 
+	return deputies_df
+
+def check_if_processed(filename):
+	"""
+	Checks if the votation data has already been processed.
+	Returns True if processed, False otherwise.
+	"""
+	file_status_df = pd.read_csv(DATA_DIR / 'already_processed.csv')
+	status = file_status_df.loc[file_status_df['file_name'] == filename, 'processed']
+	
+	if status.empty:
+		return False
+	else:
+		return status.iloc[0] == 1
