@@ -1,14 +1,16 @@
-from src.processing.analyzer import analyze_votation, check_if_processed
+from src.processing.analyzer import analyze_votation
+from scraping.scrape import scrape_laws_metadata
 from src.directory.utils import get_elems_in_directory
 
-from paths import RAW_DATA_DIR
+from paths import VOTATIONS_DIR
 
 def main():
-	raw_data_elems = get_elems_in_directory(RAW_DATA_DIR)
-	filename = raw_data_elems[0] if raw_data_elems else None
-	
-	results = analyze_votation(filename)
-	print(results)
+	scrape_laws_metadata()
+
+	votation_elems = get_elems_in_directory(VOTATIONS_DIR)
+	for votation_name in votation_elems:
+		votation_id = int(votation_name[:4])
+		analyze_votation(votation_id)
 
 if __name__ == "__main__":
 	main()

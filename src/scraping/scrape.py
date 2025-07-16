@@ -24,7 +24,6 @@ def scrape_laws_metadata(type = 'ley', year = 2025):
 	response = requests.post(url, data=payload, headers=headers)
 
 	if response.status_code == 200:
-		print("Request was successful!")
 
 		new_law_metadata_df = parse_law_list(response.text)
 
@@ -37,7 +36,6 @@ def scrape_laws_metadata(type = 'ley', year = 2025):
 
 		print(f"Found {len(truly_new_laws)} new laws to add.")
 
-		# Concatenar solo si hay leyes nuevas
 		if not truly_new_laws.empty:
 			updated_df = pd.concat([old_law_metadata_df, truly_new_laws])
 			updated_df.to_csv('data/law_metadata.csv')
@@ -96,7 +94,8 @@ def parse_law_list(html_content):
 			'title': cells[1].text.strip(),
 			'type': cells[2].text.strip(),
 			'result': 'positive' if cells[2].text.strip() == 'AFIRMATIVO' else 'negative',
-			'processed': 0
+			'processed': 0,
+			'analyzed': 0
 		})
 	return pd.DataFrame(laws_data).set_index('id')
 
