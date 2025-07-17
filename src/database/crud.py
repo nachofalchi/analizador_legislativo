@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 
-from database.models import VotationMetadata
+from src.database.models import VotationMetadata
 
 def save_votation_metadata(db: Session, votation_metadata: List[Dict[str, Any]]) -> int:
 	"""
