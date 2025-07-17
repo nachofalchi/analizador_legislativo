@@ -1,4 +1,4 @@
-# src/views/analysis.py
+# src/views/deputies.py
 
 import streamlit as st
 import pandas as pd

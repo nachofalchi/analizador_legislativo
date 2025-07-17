@@ -1,5 +1,10 @@
 import streamlit as st
 import pandas as pd
+import sys
+import os
+
+# Añadir directorio raíz al path para importar main
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from main import analyze_votations
 
 @st.cache_data

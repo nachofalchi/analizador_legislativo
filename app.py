@@ -7,7 +7,7 @@ including deputy loyalty, block cohesion, and attendance tracking.
 
 import streamlit as st
 from src.views.dashboard import show_home
-from views.deputies import show_analysis_page
+from src.views.deputies import show_analysis_page
 from src.views.predictions import show_predictions
 
 # Configure Streamlit page

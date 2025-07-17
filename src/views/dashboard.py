@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
+from datetime import datetime
+
 from src.data_loader import load_analysis_data
 from main import get_votations_metadata, get_votation_data
-from datetime import datetime
-import pandas as pd
-import plotly.express as px
 
 def show_home():
 	"""Display home page with navigation buttons and main dashboard."""
