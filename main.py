@@ -6,7 +6,7 @@ Argentine legislative voting data, including deputy loyalty and
 support for government positions.
 """
 
-from scraping.scrape import scrape_votation_metadata, scrape_votation_data
+from src.scraping.scrape import scrape_votation_metadata, scrape_votation_data
 from src.processing.analyzer import determine_loyalty_votation
 import pandas as pd
 
