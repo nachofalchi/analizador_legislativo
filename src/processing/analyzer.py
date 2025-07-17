@@ -58,27 +58,37 @@ def compare_block_deputies_preference(votation_df, blocks_df):
 		how='left'
 	)
 
-	# Loyalty calculation
-	cond_loyal_afirmative = (merged_df['preference'] == 1) & (merged_df['vote'].isin(['AFIRMATIVO']))
-	cond_loyal_negative = (merged_df['preference'] == 0) & (merged_df['vote'].isin(['NEGATIVO']))
+	# Loyalty
+	cond_loyal_afirmative = (merged_df['preference'] == 1) & (merged_df['vote'] == 'AFIRMATIVO')
+	cond_loyal_negative = (merged_df['preference'] == 0) & (merged_df['vote'] == 'NEGATIVO')
 	merged_df['loyalty'] = np.where(cond_loyal_afirmative | cond_loyal_negative, 1, 0)
     
       
 	# Prediction accuracy
 	votation_result = 1 if len(votation_df.loc[votation_df['vote'] == 'AFIRMATIVO']) > len(votation_df) else 0
-	accerted_afirmative = (votation_result == 1) & (merged_df['vote'].isin(['AFIRMATIVO']))
-	accerted_negative = (votation_result == 0) & (merged_df['vote'].isin(['NEGATIVO']))  
+	accerted_afirmative = (votation_result == 1) & (merged_df['vote'] == 'AFIRMATIVO')
+	accerted_negative = (votation_result == 0) & (merged_df['vote'] == 'NEGATIVO')  
 	merged_df['accerted'] = np.where(accerted_afirmative | accerted_negative, 1, 0)
     
 	# Officialism support calculation
 	officialism_preference = blocks_df.loc['La Libertad Avanza', 'preference']
-	cond_loyal_officialism_affirmative = (officialism_preference == 1) & (merged_df['vote'].isin(['AFIRMATIVO', 'PRESIDENTE']))
-	cond_loyal_officialism_negative = (officialism_preference == 0) & (merged_df['vote'].isin(['NEGATIVO', 'AUSENTE', 'SIN VOTAR', 'ABSTENCION']))
+	cond_loyal_officialism_affirmative = (officialism_preference == 1) & (merged_df['vote'] == 'AFIRMATIVO')
+	cond_loyal_officialism_negative = (officialism_preference == 0) & (merged_df['vote'] == 'NEGATIVO')
 	merged_df['supported_officialism'] = np.where(cond_loyal_officialism_affirmative | cond_loyal_officialism_negative, 1, 0) 
       
-	
+	# Ausentism
+	ausentism = merged_df['vote'] == 'AUSENTE'
+	merged_df['absent'] = np.where(ausentism, 1, 0)
+      
+	# Not voting
+	not_voting = merged_df['vote'] == 'SIN VOTAR'
+	merged_df['not_voted'] = np.where(not_voting, 1, 0)
+      
+	# Abstention
+	abstention = merged_df['vote'] == 'ABSTENCION'
+	merged_df['abstention'] = np.where(abstention, 1, 0)
 
-	deputies_df = merged_df[['block', 'deputy', 'vote', 'loyalty', 'supported_officialism','accerted']]
+	deputies_df = merged_df[['block', 'deputy', 'vote', 'loyalty', 'supported_officialism','accerted', 'absent', 'not_voted', 'abstention']]
 	deputies_df.set_index(['block', 'deputy'], inplace=True)
 
 	return deputies_df
