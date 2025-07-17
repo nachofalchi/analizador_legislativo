@@ -70,14 +70,16 @@ def show_deputies_list(analysis_df: pd.DataFrame):
     paginated_df = sorted_df.iloc[start_idx:end_idx]
 
     # --- RENDER PAGINATED LIST ---
-    for row in paginated_df.itertuples():
+    for i, row in enumerate(paginated_df.itertuples()):
         with st.container(border=True):
             col_info, col_button = st.columns([4, 1])
             with col_info:
                 st.subheader(row.deputy)
                 st.caption(f"Bloque: {row.block} | Lealtad: {row.average_loyalty:.1%}")
             with col_button:
-                if st.button("Ver Perfil", key=f"view_{row.deputy}", use_container_width=True):
+                # Usar una combinación de índice, nombre y bloque para garantizar unicidad
+                button_key = f"view_{start_idx + i}_{row.deputy}_{row.block}"
+                if st.button("Ver Perfil", key=button_key, use_container_width=True):
                     st.session_state.selected_deputy = row.deputy
                     st.rerun()
     
