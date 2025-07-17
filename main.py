@@ -10,8 +10,8 @@ from src.scraping.scrape import scrape_votation_metadata, scrape_votation_data
 from src.processing.analyzer import determine_loyalty_votation
 import pandas as pd
 
-from database.crud import save_votation_metadata
-from database.connections import SessionLocal, Base, engine
+from src.database.crud import save_votation_metadata
+from src.database.connections import SessionLocal, Base, engine
 from src.database.models import VotationMetadata, DeputiesVoting
 
 from paths import VOTATIONS_DIR
