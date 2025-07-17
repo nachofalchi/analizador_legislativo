@@ -12,12 +12,7 @@ from paths import VOTATIONS_DIR
 
 def main():
 	Base.metadata.create_all(bind=engine)
-
-	# update_votation_metadata()
-
-	# update_votation_data()
-
-	analyze_votations()
+	pass
 
 def update_votation_metadata():
 	"""
@@ -63,6 +58,9 @@ def update_votation_data():
 
 def analyze_votations():
 	"""
+	Returns a DataFrame with the analysis of votations.
+	Each row contains the block name, deputy name, average loyalty, total votes,
+	and officialism support.
 	"""
 	db = SessionLocal()
 
@@ -91,14 +89,33 @@ def analyze_votations():
 	final_analysis_df = df_merged.groupby(['block','deputy']).agg(
             average_loyalty=('loyalty', 'mean'),
             total_votes=('vote', 'count'),
-			officialism_support=('supported_officialism', 'mean')
+			officialism_support=('supported_officialism', 'mean'),
+			accerted=('accerted', 'count')
         )
 
-	print(final_analysis_df.sort_values(ascending=False, by='average_loyalty').tail(20))
+	return final_analysis_df
 
+def get_votations_metadata():
+	"""
+	Returns a DataFrame with the votation metadata.
+	Each row contains the votation ID, date, title, type, result, loaded status, and analyzed status.
+	"""
+	db = SessionLocal()
+	query = db.query(VotationMetadata)
+	df = pd.read_sql(query.statement, db.bind, index_col='id')
+	db.close()
+	return df
 
-
-
+def get_votation_data(votation_id):
+	"""
+	Returns a DataFrame with the votation data for the given votation ID.
+	Each row contains the vote ID, deputy name, block name, province, and vote.
+	"""
+	db = SessionLocal()
+	query = db.query(DeputiesVoting).filter(DeputiesVoting.vote_id == votation_id)
+	df = pd.read_sql(query.statement, db.bind, index_col='id')
+	db.close()
+	return df
 
 if __name__ == "__main__":
 	main()

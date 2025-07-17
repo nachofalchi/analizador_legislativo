@@ -58,20 +58,27 @@ def compare_block_deputies_preference(votation_df, blocks_df):
 		how='left'
 	)
 
-
-	cond_loyal_afirmative = (merged_df['preference'] == 1) & (merged_df['vote'].isin(['AFIRMATIVO', 'PRESIDENTE']))
-	cond_loyal_negative = (merged_df['preference'] == 0) & (merged_df['vote'].isin(['NEGATIVO','AUSENTE', 'SIN VOTAR', 'ABSTENCION']))
-
+	# Loyalty calculation
+	cond_loyal_afirmative = (merged_df['preference'] == 1) & (merged_df['vote'].isin(['AFIRMATIVO']))
+	cond_loyal_negative = (merged_df['preference'] == 0) & (merged_df['vote'].isin(['NEGATIVO']))
 	merged_df['loyalty'] = np.where(cond_loyal_afirmative | cond_loyal_negative, 1, 0)
+    
       
+	# Prediction accuracy
+	votation_result = 1 if len(votation_df.loc[votation_df['vote'] == 'AFIRMATIVO']) > len(votation_df) else 0
+	accerted_afirmative = (votation_result == 1) & (merged_df['vote'].isin(['AFIRMATIVO']))
+	accerted_negative = (votation_result == 0) & (merged_df['vote'].isin(['NEGATIVO']))  
+	merged_df['accerted'] = np.where(accerted_afirmative | accerted_negative, 1, 0)
+    
+	# Officialism support calculation
 	officialism_preference = blocks_df.loc['La Libertad Avanza', 'preference']
-      
 	cond_loyal_officialism_affirmative = (officialism_preference == 1) & (merged_df['vote'].isin(['AFIRMATIVO', 'PRESIDENTE']))
 	cond_loyal_officialism_negative = (officialism_preference == 0) & (merged_df['vote'].isin(['NEGATIVO', 'AUSENTE', 'SIN VOTAR', 'ABSTENCION']))
-
 	merged_df['supported_officialism'] = np.where(cond_loyal_officialism_affirmative | cond_loyal_officialism_negative, 1, 0) 
+      
+	
 
-	deputies_df = merged_df[['block', 'deputy', 'vote', 'loyalty', 'supported_officialism']]
+	deputies_df = merged_df[['block', 'deputy', 'vote', 'loyalty', 'supported_officialism','accerted']]
 	deputies_df.set_index(['block', 'deputy'], inplace=True)
 
 	return deputies_df
